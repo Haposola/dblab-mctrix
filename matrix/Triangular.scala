@@ -10,7 +10,9 @@ class UpperTriangular(size:Long,  vectors:RDD[(Long,BDV[Double])], rowMajor:Bool
   def this(vectors:RDD[(Long,BDV[Double])], rowMajor:Boolean)=this(0L, vectors, rowMajor)
   def this(size:Long,vectors:RDD[(Long,BDV[Double])])=this(size,vectors,true)
   def this(vectors:RDD[(Long,BDV[Double])])=this(0L, vectors, true)
+  def this(denseVectored: DenseVectored)=this(denseVectored.numCols(),denseVectored.rows,true)
 
+  def getVectors=vectors
   def getSize():Long = {
     if(size==0){
       vectors.map{v=>v._1}.reduce((a,b)=>{if(a>b)a else b})
@@ -31,18 +33,18 @@ class UpperTriangular(size:Long,  vectors:RDD[(Long,BDV[Double])], rowMajor:Bool
       result={
         val ithBroadcast =result
           .filter{case(index,data,rightItem)=>{index==ite}}
-          .map{case(index,data,rightItem)=>rightItem/data(index.toInt)}
+          .map{case(index,data,rightItem)=>rightItem/data(0)}
           .collect()(0)
         result.map{case(index,data,rightItem)=>
           if(index==ite){
             (index,BDV[Double](),ithBroadcast)
           }else if(index<ite){
-            (index,data,rightItem-data(ite.toInt)*ithBroadcast)
+            (index,data,rightItem-data((ite-index).toInt)*ithBroadcast)
           }else{
             (index,data,rightItem)
           }
         }
-      }
+      }.cache()
     }
     BDV(result.sortBy{case(index,data,rightItem)=>index}.map{case(index,data,rightItem)=>rightItem}.collect())
 
@@ -53,7 +55,9 @@ class LowerTriangular(size:Long,  vectors:RDD[(Long,BDV[Double])], rowMajor:Bool
   def this(vectors:RDD[(Long,BDV[Double])], rowMajor:Boolean)=this(0L, vectors, rowMajor)
   def this(size:Long,vectors:RDD[(Long,BDV[Double])])=this(size,vectors,true)
   def this(vectors:RDD[(Long,BDV[Double])])=this(0L, vectors, true)
+  def this(denseVectored: DenseVectored)=this(denseVectored.numCols(),denseVectored.rows,true)
 
+  def getVectors=vectors
   def getSize():Long = {
     if(size==0){
       vectors.map{v=>v._1}.reduce((a,b)=>{if(a>b)a else b})
