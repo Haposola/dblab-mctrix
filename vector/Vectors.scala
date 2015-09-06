@@ -4,6 +4,7 @@ package edu.hit.dblab.mctrix.vector
  * Notice: the code in this file is copy from MLlib, to make it compatible
  */
 
+import scala.{specialized=>spec}
 import java.io.{DataInput, DataOutput}
 import java.lang.{Double => JavaDouble, Integer => JavaInteger, Iterable => JavaIterable}
 import java.util.Arrays
@@ -134,6 +135,13 @@ object Vectors {
     } else {
       new SparseVector(v.length, v.index.slice(0, v.used), v.data.slice(0, v.used))
     }
+  }
+
+  def denseOneInK (size:Int,pos:Int,value:Double): BDV[Double] ={
+    var x = new Array[Double](size)
+    for(i<-0 to size-1)x(i)=0.0
+    x(pos)=value
+    new BDV(x)
   }
 }
 
